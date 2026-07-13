@@ -1,0 +1,11 @@
+# Secrets and session — NEVER commit these
+.env
+*.session
+*.session-journal
+
+# Runtime junk
+bridge.log
+__pycache__/
+
+# local editor/tool settings
+.claude/
