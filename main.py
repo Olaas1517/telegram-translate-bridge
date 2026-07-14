@@ -10,7 +10,7 @@ import time
 
 import requests
 from dotenv import load_dotenv
-from telethon import TelegramClient, events
+from telethon import TelegramClient, events, functions
 
 load_dotenv()
 
@@ -132,7 +132,19 @@ async def handler(event):
         log.exception("posting failed for msg %s", msg.id)
 
 
+async def keep_online():
+    # telegram batches updates (~1/min) for idle sessions; marking the account
+    # online makes it push new messages instantly
+    while True:
+        try:
+            await client(functions.account.UpdateStatusRequest(offline=False))
+        except Exception:
+            log.exception("keep-online ping failed")
+        await asyncio.sleep(240)
+
+
 if __name__ == "__main__":
     client.start()  # asks for phone + code on first run, then uses the session file
     log.info("listening to %s -> %s", SOURCE_CHANNEL, TARGET_CHANNEL)
+    client.loop.create_task(keep_online())
     client.run_until_disconnected()
