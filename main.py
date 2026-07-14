@@ -45,8 +45,15 @@ def translate(arabic_text: str) -> str:
         "contents": [{"parts": [{"text": PROMPT + arabic_text}]}],
         "generationConfig": {"temperature": 0.2},
     }
-    for attempt in range(5):
-        resp = requests.post(url, json=body, timeout=60)
+    for attempt in range(6):
+        try:
+            resp = requests.post(url, json=body, timeout=60)
+        except requests.exceptions.ConnectionError:
+            # network flap (e.g. just woke from sleep) - wait for it to settle
+            wait = 10 * (attempt + 1)
+            log.warning("network error reaching gemini, retrying in %ss", wait)
+            time.sleep(wait)
+            continue
         if resp.status_code == 429:
             # free tier allows 10 req/min, back off and retry
             wait = 15 * (attempt + 1)
