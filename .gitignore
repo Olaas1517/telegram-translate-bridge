@@ -9,3 +9,5 @@ __pycache__/
 
 # local editor/tool settings
 .claude/
+
+start_hidden.vbs
